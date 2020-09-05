@@ -4,7 +4,7 @@ AcidIslands addon for [SuperiorSkyblock2](https://www.spigotmc.org/resources/639
 
 ## Installation
 
-When dowloading, you'll find two files:
+You can download it by opening the releases tab, at the right of the window. After downloading, you'll get a zip that includes the followings:
 
 - SSBAcidIslandsGenerator.jar:
   
