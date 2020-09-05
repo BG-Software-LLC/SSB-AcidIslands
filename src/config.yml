@@ -1,0 +1,13 @@
+######################################################
+##                                                  ##
+##          SuperiorSkyblock 2 - AcidIslands        ##
+##                Developed by Ome_R                ##
+##                                                  ##
+######################################################
+
+# The first damage that will be dealt to players
+first-damage: 0.5
+
+# Every second, the damage above can be multiplied.
+# The amount that it will be multiplied by can be configured here.
+damage-multiplier: 1.2
