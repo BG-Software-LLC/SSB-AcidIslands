@@ -57,7 +57,12 @@ public final class WaterGenerator extends ChunkGenerator {
             for(int x = 0; x < 16; x++){
                 for(int z = 0; z < 16; z++){
                     for(int y = 0; y < world.getMaxHeight(); y++){
-                        biomes.setBiome(x, y, z, biomeToSet);
+                        try {
+                            biomes.setBiome(x, y, z, biomeToSet);
+                        }catch (Throwable ex){
+                            biomes.setBiome(x, z, biomeToSet);
+                        }
+
                         switch (y){
                             case 1:
                                 setBlock(blockSections, x, y, z, 12);
@@ -102,7 +107,12 @@ public final class WaterGenerator extends ChunkGenerator {
             for(int x = 0; x < 16; x++){
                 for(int z = 0; z < 16; z++){
                     for(int y = 0; y < world.getMaxHeight(); y++){
-                        biomes.setBiome(x, y, z, biomeToSet);
+                        try {
+                            biomes.setBiome(x, y, z, biomeToSet);
+                        }catch (Throwable ex){
+                            biomes.setBiome(x, z, biomeToSet);
+                        }
+
                         switch (y){
                             case 1:
                                 chunkData.setBlock(x, y, z, Material.SAND);
