@@ -1,0 +1,74 @@
+plugins {
+    id 'java'
+    id 'maven'
+    id 'com.github.johnrengelman.shadow' version '6.1.0'
+    id 'maven-publish'
+}
+
+group 'SSB-DiscordStatistics'
+version = "1.0.0"
+
+subprojects {
+    apply plugin: 'java'
+    apply plugin: 'com.github.johnrengelman.shadow'
+
+    repositories {
+        maven { url 'https://repo.bg-software.com/repository/nms/' }
+    }
+
+    dependencies {
+        compileOnly "org.spigotmc:v1_16_R3-Tuinity:latest"
+        compileOnly "org.spigotmc:v1_8_R3-Taco:latest"
+    }
+
+    shadowJar {
+        archiveFileName = "${project.name}.jar"
+        destinationDirectory = file("../target/")
+    }
+
+    build {
+        dependsOn shadowJar
+    }
+}
+
+repositories {
+    maven { url 'https://repo.bg-software.com/repository/nms/' }
+    maven { url 'https://repo.bg-software.com/repository/api/' }
+}
+
+dependencies {
+    compileOnly "org.spigotmc:v1_8_R3-Taco:latest"
+    compileOnly "com.bgsoftware:SuperiorSkyblockAPI:latest"
+}
+
+processResources {
+    outputs.upToDateWhen {false}
+    eachFile { details ->
+        if (details.name.contentEquals('plugin.yml')) {
+            filter { String line ->
+                line.replace('${project.version}', (String) version)
+            }
+        }
+    }
+}
+
+shadowJar {
+    dependsOn(jar)
+
+    archiveName = rootProject.name + ".jar"
+
+    delete fileTree('./target/') {
+        exclude archiveName
+    }
+
+    destinationDir = file("./target/")
+    from sourceSets.getByName("main").output
+    configurations = [project.configurations.getByName("runtimeClasspath")]
+}
+
+build {
+    dependsOn shadowJar
+}
+
+publish.shouldRunAfter shadowJar
+shadowJar.shouldRunAfter build

@@ -12,7 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-@SuppressWarnings({"deprecation", "unused", "NullableProblems"})
+@SuppressWarnings({"deprecation", "unused"})
 public final class WaterGenerator extends ChunkGenerator {
 
     private final double islandsLevel;
