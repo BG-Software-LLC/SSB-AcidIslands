@@ -6,6 +6,7 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.generator.BlockPopulator;
 import org.bukkit.generator.ChunkGenerator;
 import org.bukkit.plugin.java.JavaPlugin;
+import com.bgsoftware.common.reflection.ReflectMethod;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -14,6 +15,8 @@ import java.util.Random;
 
 @SuppressWarnings({"deprecation", "unused"})
 public final class WaterGenerator extends ChunkGenerator {
+
+    private static final ReflectMethod<Void> BIOME_GRID_NEW_BIOMES = new ReflectMethod<>(BiomeGrid.class, "setBiome", int.class, int.class, int.class, Biome.class);
 
     private final double islandsLevel;
 
@@ -27,6 +30,7 @@ public final class WaterGenerator extends ChunkGenerator {
             YamlConfiguration cfg = YamlConfiguration.loadConfiguration(settingsFile);
             islandsLevel = cfg.getDouble("islands-height") - 3;
         }
+
     }
 
     @Override
@@ -56,11 +60,13 @@ public final class WaterGenerator extends ChunkGenerator {
         if(blockToSet != null && biomeToSet != null){
             for(int x = 0; x < 16; x++){
                 for(int z = 0; z < 16; z++){
+                    if(!BIOME_GRID_NEW_BIOMES.isValid()){
+                        biomes.setBiome(x, z, biomeToSet);
+                    }
+
                     for(int y = 0; y < world.getMaxHeight(); y++){
-                        try {
+                        if(BIOME_GRID_NEW_BIOMES.isValid()){
                             biomes.setBiome(x, y, z, biomeToSet);
-                        }catch (Throwable ex){
-                            biomes.setBiome(x, z, biomeToSet);
                         }
 
                         switch (y){

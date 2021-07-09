@@ -1,1 +1,9 @@
 group 'Generator'
+
+repositories {
+    maven { url 'https://repo.bg-software.com/repository/common/' }
+}
+
+dependencies {
+    implementation 'com.bgsoftware.common.reflection:ReflectionUtils:latest'
+}
