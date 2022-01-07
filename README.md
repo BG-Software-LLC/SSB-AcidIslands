@@ -4,17 +4,9 @@ AcidIslands addon for [SuperiorSkyblock2](https://www.spigotmc.org/resources/639
 
 ## Installation
 
-You can download it by opening the releases tab, at the right of the window. After downloading, you'll get a zip that includes the followings:
-
-- SSBAcidIslandsGenerator.jar:
-  
-  This jar handles the water in the world. You need to put this jar in plugins/SuperiorSkyblock2/world-generator
-
-- SSBAcidIslands.jar:
-
-  This jar is the plugin itself. It will handle all the water interactions and damaging players.
-  
-  You need to put this jar in the plugins folder, same as every other plugin.
+1. Download the addon on our [Jenkins page](https://hub.bg-software.com/job/SuperiorSkyblock%20Addons/job/AcidIslands/)!
+2. Drag the SSBAcidIslands-{version}-b{build}.jar to the modules folder of SuperiorSkyblock.
+3. Drag the Generator.jar to the world-generator folder of SuperiorSkyblock.
 
 ## Credits
 
