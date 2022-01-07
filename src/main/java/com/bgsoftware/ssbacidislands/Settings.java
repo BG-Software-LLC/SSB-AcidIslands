@@ -13,7 +13,7 @@ public final class Settings {
         File file = new File(plugin.getDataFolder(), "config.yml");
 
         if(!file.exists())
-            plugin.saveResource("config.yml", false);
+            plugin.saveResource("config.yml");
 
         YamlConfiguration cfg = YamlConfiguration.loadConfiguration(file);
 

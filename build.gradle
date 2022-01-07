@@ -24,7 +24,7 @@ allprojects {
 subprojects {
     shadowJar {
         archiveFileName = "${project.name}.jar"
-        destinationDirectory = file("../archive/")
+        destinationDirectory = file("../target/")
     }
 }
 

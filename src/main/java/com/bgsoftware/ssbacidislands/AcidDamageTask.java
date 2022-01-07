@@ -21,7 +21,7 @@ public final class AcidDamageTask extends BukkitRunnable {
 
     private AcidDamageTask(Player player){
         this.player = player;
-        runTaskTimer(plugin, 20L, 20L);
+        runTaskTimer(SSBAcidIslands.getJavaPlugin(), 20L, 20L);
     }
 
     @Override
