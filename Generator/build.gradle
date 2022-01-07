@@ -6,4 +6,5 @@ repositories {
 
 dependencies {
     implementation 'com.bgsoftware.common.reflection:ReflectionUtils:latest'
+    compileOnly "org.spigotmc:v1_16_R3-Tuinity:latest"
 }
