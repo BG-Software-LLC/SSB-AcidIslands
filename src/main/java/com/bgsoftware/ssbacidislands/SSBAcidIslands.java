@@ -16,6 +16,7 @@ public final class SSBAcidIslands extends PluginModule {
     public SSBAcidIslands() {
         super("acidislands", "Ome_R");
         instance = this;
+        WaterGenerator.init();
     }
 
     @Override

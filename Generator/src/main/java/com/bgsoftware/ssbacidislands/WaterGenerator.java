@@ -1,3 +1,6 @@
+package com.bgsoftware.ssbacidislands;
+
+import com.bgsoftware.common.reflection.ReflectMethod;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -6,7 +9,6 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.generator.BlockPopulator;
 import org.bukkit.generator.ChunkGenerator;
 import org.bukkit.plugin.java.JavaPlugin;
-import com.bgsoftware.common.reflection.ReflectMethod;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -16,21 +18,24 @@ import java.util.Random;
 @SuppressWarnings({"deprecation", "unused"})
 public final class WaterGenerator extends ChunkGenerator {
 
-    private static final ReflectMethod<Void> BIOME_GRID_NEW_BIOMES = new ReflectMethod<>(BiomeGrid.class, "setBiome", int.class, int.class, int.class, Biome.class);
+    private static boolean NEW_BIOMES_METHOD = false;
 
     private final double islandsLevel;
 
-    public WaterGenerator(JavaPlugin plugin){
+    public static void init() {
+        NEW_BIOMES_METHOD = new ReflectMethod<>(BiomeGrid.class, "setBiome",
+                int.class, int.class, int.class, Biome.class).isValid();
+    }
+
+    public WaterGenerator(JavaPlugin plugin) {
         File settingsFile = new File(plugin.getDataFolder(), "config.yml");
 
-        if(!settingsFile.exists()){
+        if (!settingsFile.exists()) {
             islandsLevel = 97;
-        }
-        else{
+        } else {
             YamlConfiguration cfg = YamlConfiguration.loadConfiguration(settingsFile);
             islandsLevel = cfg.getDouble("islands-height") - 3;
         }
-
     }
 
     @Override
@@ -44,7 +49,7 @@ public final class WaterGenerator extends ChunkGenerator {
         Material blockToSet = null;
         Biome biomeToSet = null;
 
-        switch (world.getEnvironment()){
+        switch (world.getEnvironment()) {
             case NETHER: {
                 blockToSet = Material.LAVA;
                 biomeToSet = getNetherBiome();
@@ -57,19 +62,19 @@ public final class WaterGenerator extends ChunkGenerator {
             }
         }
 
-        if(blockToSet != null && biomeToSet != null){
-            for(int x = 0; x < 16; x++){
-                for(int z = 0; z < 16; z++){
-                    if(!BIOME_GRID_NEW_BIOMES.isValid()){
+        if (blockToSet != null && biomeToSet != null) {
+            for (int x = 0; x < 16; x++) {
+                for (int z = 0; z < 16; z++) {
+                    if (!NEW_BIOMES_METHOD) {
                         biomes.setBiome(x, z, biomeToSet);
                     }
 
-                    for(int y = 0; y < world.getMaxHeight(); y++){
-                        if(BIOME_GRID_NEW_BIOMES.isValid()){
+                    for (int y = 0; y < world.getMaxHeight(); y++) {
+                        if (NEW_BIOMES_METHOD) {
                             biomes.setBiome(x, y, z, biomeToSet);
                         }
 
-                        switch (y){
+                        switch (y) {
                             case 1:
                                 setBlock(blockSections, x, y, z, 12);
                                 break;
@@ -77,7 +82,7 @@ public final class WaterGenerator extends ChunkGenerator {
                                 setBlock(blockSections, x, y, z, 7);
                                 break;
                             default:
-                                if(y <= islandsLevel){
+                                if (y <= islandsLevel) {
                                     setBlock(blockSections, x, y, z, blockToSet.getId());
                                 }
                                 break;
@@ -96,7 +101,7 @@ public final class WaterGenerator extends ChunkGenerator {
         Material blockToSet = null;
         Biome biomeToSet = null;
 
-        switch (world.getEnvironment()){
+        switch (world.getEnvironment()) {
             case NETHER: {
                 blockToSet = Material.LAVA;
                 biomeToSet = getNetherBiome();
@@ -109,17 +114,17 @@ public final class WaterGenerator extends ChunkGenerator {
             }
         }
 
-        if(blockToSet != null && biomeToSet != null){
-            for(int x = 0; x < 16; x++){
-                for(int z = 0; z < 16; z++){
-                    for(int y = 0; y < world.getMaxHeight(); y++){
+        if (blockToSet != null && biomeToSet != null) {
+            for (int x = 0; x < 16; x++) {
+                for (int z = 0; z < 16; z++) {
+                    for (int y = 0; y < world.getMaxHeight(); y++) {
                         try {
                             biomes.setBiome(x, y, z, biomeToSet);
-                        }catch (Throwable ex){
+                        } catch (Throwable ex) {
                             biomes.setBiome(x, z, biomeToSet);
                         }
 
-                        switch (y){
+                        switch (y) {
                             case 1:
                                 chunkData.setBlock(x, y, z, Material.SAND);
                                 break;
@@ -127,7 +132,7 @@ public final class WaterGenerator extends ChunkGenerator {
                                 chunkData.setBlock(x, y, z, Material.BEDROCK);
                                 break;
                             default:
-                                if(y <= islandsLevel){
+                                if (y <= islandsLevel) {
                                     chunkData.setBlock(x, y, z, blockToSet);
                                 }
                                 break;
@@ -147,17 +152,17 @@ public final class WaterGenerator extends ChunkGenerator {
     }
 
     @SuppressWarnings("SameParameterValue")
-    private void setBlock(byte[][] blocks, int x, int y, int z, int blockId){
-        if(blocks[y >> 4] == null)
+    private void setBlock(byte[][] blocks, int x, int y, int z, int blockId) {
+        if (blocks[y >> 4] == null)
             blocks[y >> 4] = new byte[4096];
 
         blocks[y >> 4][((y & 0xF) << 8) | (z << 4) | x] = (byte) blockId;
     }
 
-    private static Biome getNetherBiome(){
-        try{
+    private static Biome getNetherBiome() {
+        try {
             return Biome.valueOf("NETHER_WASTES");
-        }catch (Throwable ex){
+        } catch (Throwable ex) {
             return Biome.valueOf("HELL");
         }
     }
