@@ -30,7 +30,7 @@ subprojects {
 
 dependencies {
     compileOnly "org.spigotmc:v1_8_R3-Taco:latest"
-    compileOnly "com.bgsoftware:SuperiorSkyblockAPI:1.8.3"
+    compileOnly "com.bgsoftware:SuperiorSkyblockAPI:1.11.0"
 }
 
 processResources {
