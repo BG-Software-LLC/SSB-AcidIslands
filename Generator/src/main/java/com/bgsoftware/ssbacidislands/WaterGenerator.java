@@ -1,16 +1,15 @@
 package com.bgsoftware.ssbacidislands;
 
 import com.bgsoftware.common.reflection.ReflectMethod;
+import com.bgsoftware.superiorskyblock.api.SuperiorSkyblock;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Biome;
-import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.generator.BlockPopulator;
 import org.bukkit.generator.ChunkGenerator;
-import org.bukkit.plugin.java.JavaPlugin;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -19,28 +18,19 @@ import java.util.Random;
 public final class WaterGenerator extends ChunkGenerator {
 
     private static boolean NEW_BIOMES_METHOD = false;
+    private static double ISLANDS_HEIGHT;
 
-    private final double islandsLevel;
-
-    public static void init() {
-        NEW_BIOMES_METHOD = new ReflectMethod<>(BiomeGrid.class, "setBiome",
-                int.class, int.class, int.class, Biome.class).isValid();
-    }
-
-    public WaterGenerator(JavaPlugin plugin) {
-        File settingsFile = new File(plugin.getDataFolder(), "config.yml");
-
-        if (!settingsFile.exists()) {
-            islandsLevel = 97;
-        } else {
-            YamlConfiguration cfg = YamlConfiguration.loadConfiguration(settingsFile);
-            islandsLevel = cfg.getDouble("islands-height") - 3;
-        }
+    public WaterGenerator(SuperiorSkyblock plugin) {
+        Bukkit.getScheduler().runTask(plugin, () -> {
+            NEW_BIOMES_METHOD = new ReflectMethod<>(BiomeGrid.class, "setBiome",
+                    int.class, int.class, int.class, Biome.class).isValid();
+            ISLANDS_HEIGHT = plugin.getSettings().getIslandHeight() - 3;
+        });
     }
 
     @Override
     public Location getFixedSpawnLocation(World world, Random random) {
-        return new Location(world, 0, islandsLevel, 0);
+        return new Location(world, 0, ISLANDS_HEIGHT, 0);
     }
 
     public byte[][] generateBlockSections(World world, Random random, int chunkX, int chunkZ, BiomeGrid biomes) {
@@ -82,7 +72,7 @@ public final class WaterGenerator extends ChunkGenerator {
                                 setBlock(blockSections, x, y, z, 7);
                                 break;
                             default:
-                                if (y <= islandsLevel) {
+                                if (y <= ISLANDS_HEIGHT) {
                                     setBlock(blockSections, x, y, z, blockToSet.getId());
                                 }
                                 break;
@@ -132,7 +122,7 @@ public final class WaterGenerator extends ChunkGenerator {
                                 chunkData.setBlock(x, y, z, Material.BEDROCK);
                                 break;
                             default:
-                                if (y <= islandsLevel) {
+                                if (y <= ISLANDS_HEIGHT) {
                                     chunkData.setBlock(x, y, z, blockToSet);
                                 }
                                 break;
