@@ -1,9 +1,8 @@
 package com.bgsoftware.ssbacidislands.damage;
 
 import com.bgsoftware.ssbacidislands.SSBAcidIslands;
+import com.bgsoftware.ssbacidislands.util.PlayerUtils;
 import org.bukkit.GameMode;
-import org.bukkit.block.Block;
-import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 
@@ -20,28 +19,26 @@ public final class AcidDamageTask extends BukkitRunnable {
     private final Player player;
     private double lastDamage = plugin.getSettings().firstDamage;
 
-    private AcidDamageTask(Player player){
+    private AcidDamageTask(Player player) {
         this.player = player;
         runTaskTimer(SSBAcidIslands.getJavaPlugin(), 20L, 20L);
     }
 
     @Override
     public void run() {
-        if(!player.isOnline()) {
+        if (!player.isOnline()) {
             stopTask(player);
             return;
         }
 
         GameMode gameMode = player.getGameMode();
 
-        if(gameMode == GameMode.CREATIVE || gameMode == GameMode.SPECTATOR){
+        if (gameMode == GameMode.CREATIVE || gameMode == GameMode.SPECTATOR) {
             stopTask(player);
             return;
         }
 
-        Block playerBlock = player.getLocation().getBlock();
-
-        if(!playerBlock.getType().name().contains("WATER") && !playerBlock.getRelative(BlockFace.DOWN).getType().name().contains("WATER")){
+        if (!PlayerUtils.isInWater(player)) {
             stopTask(player);
             return;
         }
@@ -50,17 +47,17 @@ public final class AcidDamageTask extends BukkitRunnable {
         lastDamage *= plugin.getSettings().damageMultiplier;
     }
 
-    public static Optional<AcidDamageTask> getTask(Player player){
+    public static Optional<AcidDamageTask> getTask(Player player) {
         return Optional.ofNullable(acidDamageTasks.get(player.getUniqueId()));
     }
 
-    public static void stopTask(Player player){
+    public static void stopTask(Player player) {
         AcidDamageTask acidDamageTask = acidDamageTasks.remove(player.getUniqueId());
-        if(acidDamageTask != null)
+        if (acidDamageTask != null)
             acidDamageTask.cancel();
     }
 
-    public static AcidDamageTask createTask(Player player){
+    public static AcidDamageTask createTask(Player player) {
         return acidDamageTasks.computeIfAbsent(player.getUniqueId(), u -> new AcidDamageTask(player));
     }
 
