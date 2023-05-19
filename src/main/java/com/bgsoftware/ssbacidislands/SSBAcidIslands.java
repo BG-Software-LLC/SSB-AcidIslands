@@ -1,5 +1,7 @@
 package com.bgsoftware.ssbacidislands;
 
+import com.bgsoftware.ssbacidislands.config.SettingsHandler;
+import com.bgsoftware.ssbacidislands.listener.WaterListener;
 import com.bgsoftware.superiorskyblock.api.SuperiorSkyblock;
 import com.bgsoftware.superiorskyblock.api.commands.SuperiorCommand;
 import com.bgsoftware.superiorskyblock.api.modules.PluginModule;
@@ -8,10 +10,12 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 public final class SSBAcidIslands extends PluginModule {
 
+    private static final SuperiorCommand[] EMPTY_COMMANDS = new SuperiorCommand[0];
+
     private static SSBAcidIslands instance;
     private static JavaPlugin javaPlugin;
 
-    private Settings settings;
+    private SettingsHandler settingsHandler;
 
     public SSBAcidIslands() {
         super("acidislands", "Ome_R");
@@ -21,7 +25,7 @@ public final class SSBAcidIslands extends PluginModule {
     @Override
     public void onEnable(SuperiorSkyblock plugin) {
         javaPlugin = (JavaPlugin) plugin;
-        settings = new Settings(this);
+        settingsHandler = new SettingsHandler(this);
     }
 
     @Override
@@ -41,16 +45,16 @@ public final class SSBAcidIslands extends PluginModule {
 
     @Override
     public SuperiorCommand[] getSuperiorCommands(SuperiorSkyblock superiorSkyblock) {
-        return new SuperiorCommand[0];
+        return EMPTY_COMMANDS;
     }
 
     @Override
     public SuperiorCommand[] getSuperiorAdminCommands(SuperiorSkyblock superiorSkyblock) {
-        return new SuperiorCommand[0];
+        return EMPTY_COMMANDS;
     }
 
-    public Settings getSettings() {
-        return settings;
+    public SettingsHandler getSettings() {
+        return settingsHandler;
     }
 
     public static SSBAcidIslands getPlugin() {

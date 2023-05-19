@@ -1,19 +1,20 @@
-package com.bgsoftware.ssbacidislands;
+package com.bgsoftware.ssbacidislands.config;
 
+import com.bgsoftware.ssbacidislands.SSBAcidIslands;
 import org.bukkit.configuration.file.YamlConfiguration;
 
 import java.io.File;
 
-public final class Settings {
+public final class SettingsHandler {
 
     public final double firstDamage;
     public final double damageMultiplier;
 
-    public Settings(SSBAcidIslands plugin){
-        File file = new File(plugin.getDataFolder(), "config.yml");
+    public SettingsHandler(SSBAcidIslands module){
+        File file = new File(module.getModuleFolder(), "config.yml");
 
         if(!file.exists())
-            plugin.saveResource("config.yml");
+            module.saveResource("config.yml");
 
         YamlConfiguration cfg = YamlConfiguration.loadConfiguration(file);
 

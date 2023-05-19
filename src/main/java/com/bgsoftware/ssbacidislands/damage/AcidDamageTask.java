@@ -1,5 +1,6 @@
-package com.bgsoftware.ssbacidislands;
+package com.bgsoftware.ssbacidislands.damage;
 
+import com.bgsoftware.ssbacidislands.SSBAcidIslands;
 import org.bukkit.GameMode;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;

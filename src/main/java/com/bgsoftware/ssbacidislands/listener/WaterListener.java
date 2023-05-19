@@ -1,5 +1,6 @@
-package com.bgsoftware.ssbacidislands;
+package com.bgsoftware.ssbacidislands.listener;
 
+import com.bgsoftware.ssbacidislands.damage.AcidDamageTask;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
