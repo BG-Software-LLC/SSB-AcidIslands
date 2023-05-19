@@ -30,7 +30,7 @@ subprojects {
 
 dependencies {
     compileOnly "org.spigotmc:v1_8_R3-Taco:latest"
-    compileOnly "com.bgsoftware:SuperiorSkyblockAPI:1.11.0"
+    compileOnly "com.bgsoftware:SuperiorSkyblockAPI:2023.1"
     compileOnly project("Generator")
 }
 
