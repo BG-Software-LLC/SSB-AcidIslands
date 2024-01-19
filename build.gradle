@@ -63,9 +63,19 @@ shadowJar {
     configurations = [project.configurations.getByName("runtimeClasspath")]
 }
 
+task zipArtifacts(type: Zip){
+    archiveFileName = rootProject.name + "-" + rootProject.buildVersion + ".zip"
+    destinationDirectory = rootProject.targetFolder
+    from files(rootProject.targetFolder) {
+        include '**/*.jar'
+    }
+}
+
 build {
     dependsOn shadowJar
+    dependsOn zipArtifacts
 }
 
 publish.shouldRunAfter shadowJar
 shadowJar.shouldRunAfter build
+build.shouldRunAfter subprojects.build
