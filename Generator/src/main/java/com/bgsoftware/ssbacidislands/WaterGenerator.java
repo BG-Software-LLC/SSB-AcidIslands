@@ -1,8 +1,13 @@
 package com.bgsoftware.ssbacidislands;
 
-import com.bgsoftware.common.reflection.ReflectMethod;
+import com.bgsoftware.ssbacidislands.biomegrid.BiomeGridAccessor;
+import com.bgsoftware.ssbacidislands.biomegrid.BiomeGridAccessor_116;
+import com.bgsoftware.ssbacidislands.biomegrid.BiomeGridAccessor_117;
+import com.bgsoftware.ssbacidislands.biomegrid.BiomeGridAccessor_Legacy;
+import com.bgsoftware.ssbacidislands.chunkdata.ChunkDataAccessor;
+import com.bgsoftware.ssbacidislands.chunkdata.ChunkDataAccessor_116;
+import com.bgsoftware.ssbacidislands.chunkdata.ChunkDataAccessor_Legacy;
 import com.bgsoftware.superiorskyblock.api.SuperiorSkyblock;
-import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -10,143 +15,109 @@ import org.bukkit.block.Biome;
 import org.bukkit.generator.BlockPopulator;
 import org.bukkit.generator.ChunkGenerator;
 
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Random;
+import java.util.function.Function;
 
-@SuppressWarnings({"deprecation", "unused"})
 public final class WaterGenerator extends ChunkGenerator {
 
-    private static boolean NEW_BIOMES_METHOD = false;
-    private static double ISLANDS_HEIGHT;
+    private static final Biome NETHER_BIOME = getNetherBiome();
+    private static final Function<ChunkData, ChunkDataAccessor> CHUNK_DATA_ACCESSOR_CREATOR = initializeChunkDataAccessorCreator();
+    private static final Function<BiomeGrid, BiomeGridAccessor> BIOME_GRID_ACCESSOR_CREATOR = initializeBiomeGridAccessorCreator();
+
+    private static Function<ChunkData, ChunkDataAccessor> initializeChunkDataAccessorCreator() {
+        if (ChunkDataAccessor_Legacy.isCompatiable())
+            return ChunkDataAccessor_Legacy::new;
+
+        return ChunkDataAccessor_116::new;
+    }
+
+    private static Function<BiomeGrid, BiomeGridAccessor> initializeBiomeGridAccessorCreator() {
+        if (BiomeGridAccessor_Legacy.isCompatiable())
+            return BiomeGridAccessor_Legacy::new;
+
+        if (BiomeGridAccessor_116.isCompatiable())
+            return BiomeGridAccessor_116::new;
+
+        return BiomeGridAccessor_117::new;
+    }
+
+    private static int ISLANDS_HEIGHT;
+    private static Location SPAWN_LOCATION;
+
 
     public WaterGenerator(SuperiorSkyblock plugin) {
-        Bukkit.getScheduler().runTask(plugin, () -> {
-            NEW_BIOMES_METHOD = new ReflectMethod<>(BiomeGrid.class, "setBiome",
-                    int.class, int.class, int.class, Biome.class).isValid();
-            ISLANDS_HEIGHT = plugin.getSettings().getIslandHeight() - 3;
-        });
+        ISLANDS_HEIGHT = plugin.getSettings().getIslandHeight() - 3;
+        SPAWN_LOCATION = new Location(null, 0, ISLANDS_HEIGHT, 0);
     }
 
     @Override
     public Location getFixedSpawnLocation(World world, Random random) {
-        return new Location(world, 0, ISLANDS_HEIGHT, 0);
+        SPAWN_LOCATION.setWorld(world);
+        return SPAWN_LOCATION;
     }
 
-    public byte[][] generateBlockSections(World world, Random random, int chunkX, int chunkZ, BiomeGrid biomes) {
-        byte[][] blockSections = new byte[world.getMaxHeight() / 16][];
-
-        Material blockToSet = null;
-        Biome biomeToSet = null;
-
-        switch (world.getEnvironment()) {
-            case NETHER: {
-                blockToSet = Material.LAVA;
-                biomeToSet = getNetherBiome();
-                break;
-            }
-            case NORMAL: {
-                blockToSet = Material.WATER;
-                biomeToSet = Biome.PLAINS;
-                break;
-            }
-        }
-
-        if (blockToSet != null && biomeToSet != null) {
-            for (int x = 0; x < 16; x++) {
-                for (int z = 0; z < 16; z++) {
-                    if (!NEW_BIOMES_METHOD) {
-                        biomes.setBiome(x, z, biomeToSet);
-                    }
-
-                    for (int y = 0; y < world.getMaxHeight(); y++) {
-                        if (NEW_BIOMES_METHOD) {
-                            biomes.setBiome(x, y, z, biomeToSet);
-                        }
-
-                        switch (y) {
-                            case 1:
-                                setBlock(blockSections, x, y, z, 12);
-                                break;
-                            case 0:
-                                setBlock(blockSections, x, y, z, 7);
-                                break;
-                            default:
-                                if (y <= ISLANDS_HEIGHT) {
-                                    setBlock(blockSections, x, y, z, blockToSet.getId());
-                                }
-                                break;
-                        }
-                    }
-                }
-            }
-        }
-
-        return blockSections;
-    }
-
+    @Override
     public ChunkData generateChunkData(World world, Random random, int chunkX, int chunkZ, BiomeGrid biomes) {
         ChunkData chunkData = createChunkData(world);
 
-        Material blockToSet = null;
-        Biome biomeToSet = null;
+        Material blockType;
+        Material groundBlockType;
+        Biome worldBiome;
 
         switch (world.getEnvironment()) {
-            case NETHER: {
-                blockToSet = Material.LAVA;
-                biomeToSet = getNetherBiome();
+            case NORMAL:
+                blockType = Material.WATER;
+                groundBlockType = Material.SAND;
+                worldBiome = Biome.PLAINS;
                 break;
-            }
-            case NORMAL: {
-                blockToSet = Material.WATER;
-                biomeToSet = Biome.PLAINS;
+            case NETHER:
+                blockType = Material.LAVA;
+                groundBlockType = Material.NETHERRACK;
+                worldBiome = NETHER_BIOME;
                 break;
-            }
+            default:
+                return chunkData;
         }
 
-        if (blockToSet != null && biomeToSet != null) {
-            for (int x = 0; x < 16; x++) {
-                for (int z = 0; z < 16; z++) {
-                    for (int y = 0; y < world.getMaxHeight(); y++) {
-                        try {
-                            biomes.setBiome(x, y, z, biomeToSet);
-                        } catch (Throwable ex) {
-                            biomes.setBiome(x, z, biomeToSet);
-                        }
+        ChunkDataAccessor chunkDataAccessor = CHUNK_DATA_ACCESSOR_CREATOR.apply(chunkData);
+        BiomeGridAccessor biomeGridAccessor = BIOME_GRID_ACCESSOR_CREATOR.apply(biomes);
 
-                        switch (y) {
-                            case 1:
-                                chunkData.setBlock(x, y, z, Material.SAND);
-                                break;
-                            case 0:
-                                chunkData.setBlock(x, y, z, Material.BEDROCK);
-                                break;
-                            default:
-                                if (y <= ISLANDS_HEIGHT) {
-                                    chunkData.setBlock(x, y, z, blockToSet);
-                                }
-                                break;
-                        }
-                    }
-                }
-            }
+        biomeGridAccessor.fillEntireChunk(worldBiome);
+
+        // Optimization - all the sections between the min-height to islands-height can be
+        // fully set with the block type.
+        for (int y = 0; y + 16 < ISLANDS_HEIGHT; y += 16) {
+            chunkDataAccessor.fillEntireChunkSectionForYLevel(y, blockType);
         }
 
+        // Last section have ground - layer of bedrock, then sand / netherrack
+        chunkDataAccessor.fillChunkSectionRowsForYLevel(0, Material.BEDROCK);
+        chunkDataAccessor.fillChunkSectionRowsForYLevel(1, groundBlockType);
+
+        // For the last section, we need to determine what is faster - filling entire chunk section
+        // with water, then setting rows to air, or the opposite. This is only needed in case the
+        // island height is not the last block level in the chunk section.
+        int islandHeightOffsetFromChunkSection = ISLANDS_HEIGHT & 0xf;
+        if (islandHeightOffsetFromChunkSection < 0xf) {
+            int islandHeightChunkSectionBase = ISLANDS_HEIGHT - islandHeightOffsetFromChunkSection;
+            if (islandHeightOffsetFromChunkSection > 8) {
+                // island height is larger than 8, which means most of the chunk section is water.
+                chunkDataAccessor.fillEntireChunkSectionForYLevel(ISLANDS_HEIGHT, blockType);
+                chunkDataAccessor.fillChunkSectionRowsForYLevelRange(ISLANDS_HEIGHT, islandHeightChunkSectionBase + 0xf, Material.AIR);
+            } else {
+                // island height is lower than 8, which means most of the chunk section is air.
+                chunkDataAccessor.fillChunkSectionRowsForYLevelRange(islandHeightChunkSectionBase, ISLANDS_HEIGHT, blockType);
+            }
+        }
 
         return chunkData;
     }
 
     @Override
     public List<BlockPopulator> getDefaultPopulators(World world) {
-        return new ArrayList<>();
-    }
-
-    @SuppressWarnings("SameParameterValue")
-    private void setBlock(byte[][] blocks, int x, int y, int z, int blockId) {
-        if (blocks[y >> 4] == null)
-            blocks[y >> 4] = new byte[4096];
-
-        blocks[y >> 4][((y & 0xF) << 8) | (z << 4) | x] = (byte) blockId;
+        return Collections.emptyList();
     }
 
     private static Biome getNetherBiome() {
