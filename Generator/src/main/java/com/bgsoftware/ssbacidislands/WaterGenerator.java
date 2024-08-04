@@ -112,6 +112,11 @@ public final class WaterGenerator extends ChunkGenerator {
             }
         }
 
+        if (chunkX == 0 && chunkZ == 0) {
+            // Set bedrock at spawn
+            chunkData.setBlock(0, ISLANDS_HEIGHT + 3, 0, Material.BEDROCK);
+        }
+
         return chunkData;
     }
 
