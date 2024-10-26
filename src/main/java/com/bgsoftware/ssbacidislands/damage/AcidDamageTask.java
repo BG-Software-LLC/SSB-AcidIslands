@@ -13,15 +13,15 @@ import java.util.UUID;
 
 public final class AcidDamageTask extends BukkitRunnable {
 
-    private static final SSBAcidIslands plugin = SSBAcidIslands.getPlugin();
+    private static final SSBAcidIslands module = SSBAcidIslands.getModule();
     private static final Map<UUID, AcidDamageTask> acidDamageTasks = new HashMap<>();
 
     private final Player player;
-    private double lastDamage = plugin.getSettings().firstDamage;
+    private double lastDamage = module.getSettings().firstDamage;
 
     private AcidDamageTask(Player player) {
         this.player = player;
-        runTaskTimer(SSBAcidIslands.getJavaPlugin(), 20L, 20L);
+        runTaskTimer(module.getPlugin(), 20L, 20L);
     }
 
     @Override
@@ -44,7 +44,7 @@ public final class AcidDamageTask extends BukkitRunnable {
         }
 
         player.damage(lastDamage);
-        lastDamage *= plugin.getSettings().damageMultiplier;
+        lastDamage *= module.getSettings().damageMultiplier;
     }
 
     public static Optional<AcidDamageTask> getTask(Player player) {

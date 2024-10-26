@@ -6,15 +6,14 @@ import com.bgsoftware.superiorskyblock.api.SuperiorSkyblock;
 import com.bgsoftware.superiorskyblock.api.commands.SuperiorCommand;
 import com.bgsoftware.superiorskyblock.api.modules.PluginModule;
 import org.bukkit.event.Listener;
-import org.bukkit.plugin.java.JavaPlugin;
 
 public final class SSBAcidIslands extends PluginModule {
 
     private static final SuperiorCommand[] EMPTY_COMMANDS = new SuperiorCommand[0];
 
     private static SSBAcidIslands instance;
-    private static JavaPlugin javaPlugin;
 
+    private SuperiorSkyblock plugin;
     private SettingsHandler settingsHandler;
 
     public SSBAcidIslands() {
@@ -24,7 +23,7 @@ public final class SSBAcidIslands extends PluginModule {
 
     @Override
     public void onEnable(SuperiorSkyblock plugin) {
-        javaPlugin = (JavaPlugin) plugin;
+        this.plugin = plugin;
         settingsHandler = new SettingsHandler(this);
     }
 
@@ -57,12 +56,12 @@ public final class SSBAcidIslands extends PluginModule {
         return settingsHandler;
     }
 
-    public static SSBAcidIslands getPlugin() {
-        return instance;
+    public SuperiorSkyblock getPlugin() {
+        return plugin;
     }
 
-    public static JavaPlugin getJavaPlugin() {
-        return javaPlugin;
+    public static SSBAcidIslands getModule() {
+        return instance;
     }
 
 }

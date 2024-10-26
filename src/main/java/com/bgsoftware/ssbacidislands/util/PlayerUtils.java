@@ -1,7 +1,6 @@
 package com.bgsoftware.ssbacidislands.util;
 
 import com.bgsoftware.ssbacidislands.SSBAcidIslands;
-import com.bgsoftware.superiorskyblock.api.SuperiorSkyblockAPI;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -14,7 +13,7 @@ import java.util.Optional;
 
 public class PlayerUtils {
 
-    private static final SSBAcidIslands module = SSBAcidIslands.getPlugin();
+    private static final SSBAcidIslands module = SSBAcidIslands.getModule();
 
     private static final EnumSet<Material> WATER_TYPES = createWaterMaterials();
 
@@ -26,7 +25,7 @@ public class PlayerUtils {
         Location playerLocation = player.getLocation();
 
         if (!module.getSettings().globalWaterDamage &&
-                !SuperiorSkyblockAPI.getGrid().isIslandsWorld(playerLocation.getWorld()))
+                !module.getPlugin().getGrid().isIslandsWorld(playerLocation.getWorld()))
             return false;
 
         Block playerBlock = playerLocation.getBlock();
