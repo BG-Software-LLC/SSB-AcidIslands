@@ -11,3 +11,7 @@ first-damage: 0.5
 # Every second, the damage above can be multiplied.
 # The amount that it will be multiplied by can be configured here.
 damage-multiplier: 1.2
+
+# Should water damage players across the entire server?
+# When set to false, water will damage players only inside island-worlds.
+global-water-damage: true
