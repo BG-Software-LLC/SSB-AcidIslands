@@ -5,7 +5,7 @@ plugins {
 }
 
 group 'SSB-AcidIslands'
-version = "1.0.0"
+version = "2024.1"
 
 project.ext {
     targetFolder = file("target/")
