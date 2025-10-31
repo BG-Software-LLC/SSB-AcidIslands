@@ -29,7 +29,7 @@ public final class SSBAcidIslands extends PluginModule {
 
     @Override
     public void onReload(SuperiorSkyblock plugin) {
-
+        settingsHandler = new SettingsHandler(this);
     }
 
     @Override
