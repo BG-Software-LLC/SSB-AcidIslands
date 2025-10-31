@@ -22,7 +22,6 @@ import java.util.function.Function;
 
 public final class WaterGenerator extends ChunkGenerator {
 
-    private static final Biome NETHER_BIOME = getNetherBiome();
     private static final Function<ChunkData, ChunkDataAccessor> CHUNK_DATA_ACCESSOR_CREATOR = initializeChunkDataAccessorCreator();
     private static final Function<BiomeGrid, BiomeGridAccessor> BIOME_GRID_ACCESSOR_CREATOR = initializeBiomeGridAccessorCreator();
 
@@ -43,11 +42,15 @@ public final class WaterGenerator extends ChunkGenerator {
         return BiomeGridAccessor_117::new;
     }
 
+    private static Biome NORMAL_BIOME;
+    private static Biome NETHER_BIOME;
     private static int ISLANDS_HEIGHT;
     private static Location SPAWN_LOCATION;
 
 
     public WaterGenerator(SuperiorSkyblock plugin) {
+        NORMAL_BIOME = getNormalBiome(plugin.getSettings().getWorlds().getNormal().getBiome());
+        NETHER_BIOME = getNetherBiome(plugin.getSettings().getWorlds().getNether().getBiome());
         ISLANDS_HEIGHT = plugin.getSettings().getIslandHeight() - 3;
         SPAWN_LOCATION = new Location(null, 0, ISLANDS_HEIGHT, 0);
     }
@@ -70,7 +73,7 @@ public final class WaterGenerator extends ChunkGenerator {
             case NORMAL:
                 blockType = Material.WATER;
                 groundBlockType = Material.SAND;
-                worldBiome = Biome.PLAINS;
+                worldBiome = NORMAL_BIOME;
                 break;
             case NETHER:
                 blockType = Material.LAVA;
@@ -125,11 +128,23 @@ public final class WaterGenerator extends ChunkGenerator {
         return Collections.emptyList();
     }
 
-    private static Biome getNetherBiome() {
+    private static Biome getNormalBiome(String biomeName) {
         try {
-            return Biome.valueOf("NETHER_WASTES");
-        } catch (Throwable ex) {
-            return Biome.valueOf("HELL");
+            return Biome.valueOf(biomeName);
+        } catch (IllegalArgumentException exception) {
+            return Biome.PLAINS;
+        }
+    }
+
+    private static Biome getNetherBiome(String biomeName) {
+        try {
+            return Biome.valueOf(biomeName);
+        } catch (IllegalArgumentException exception) {
+            try {
+                return Biome.valueOf("NETHER_WASTES");
+            } catch (Throwable throwable) {
+                return Biome.valueOf("HELL");
+            }
         }
     }
 
