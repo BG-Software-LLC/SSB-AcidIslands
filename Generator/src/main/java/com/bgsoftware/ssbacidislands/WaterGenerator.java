@@ -92,10 +92,6 @@ public final class WaterGenerator extends ChunkGenerator {
             chunkDataAccessor.fillEntireChunkSectionForYLevel(y, blockType);
         }
 
-        // Last section have ground - layer of bedrock, then sand / netherrack
-        chunkDataAccessor.fillChunkSectionRowsForYLevel(0, Material.BEDROCK);
-        chunkDataAccessor.fillChunkSectionRowsForYLevel(1, groundBlockType);
-
         // For the last section, we need to determine what is faster - filling entire chunk section
         // with water, then setting rows to air, or the opposite. This is only needed in case the
         // island height is not the last block level in the chunk section.
@@ -111,6 +107,10 @@ public final class WaterGenerator extends ChunkGenerator {
                 chunkDataAccessor.fillChunkSectionRowsForYLevelRange(islandHeightChunkSectionBase, ISLANDS_HEIGHT, blockType);
             }
         }
+
+        // Finally, we need to create the ground - layer of bedrock, then sand / netherrack
+        chunkDataAccessor.fillChunkSectionRowsForYLevel(0, Material.BEDROCK);
+        chunkDataAccessor.fillChunkSectionRowsForYLevel(1, groundBlockType);
 
         if (chunkX == 0 && chunkZ == 0) {
             // Set bedrock at spawn
