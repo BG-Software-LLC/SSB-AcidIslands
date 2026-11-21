@@ -1,21 +1,27 @@
 plugins {
     id 'java'
-    id 'com.github.johnrengelman.shadow' version '7.0.0'
+    id 'com.gradleup.shadow' version '9.4.1'
     id 'maven-publish'
 }
 
 group 'SSB-AcidIslands'
 version = "2024.1"
 
+// Read lazily so a new BUILD_NUMBER on every CI run does not invalidate the configuration cache.
+String baseVersion = version.toString()
+
 project.ext {
     targetFolder = file("target/")
-    buildVersion = System.getenv("BUILD_NUMBER") == null || Boolean.parseBoolean(System.getenv("STABLE_BUILD")) ?
-            version : version + "-b" + System.getenv("BUILD_NUMBER")
+    buildVersion = providers.environmentVariable("BUILD_NUMBER")
+            .zip(providers.environmentVariable("STABLE_BUILD").orElse("false")) { String buildNumber, String stableBuild ->
+                Boolean.parseBoolean(stableBuild) ? baseVersion : baseVersion + "-b" + buildNumber
+            }
+            .orElse(baseVersion)
 }
 
 allprojects {
     apply plugin: 'java'
-    apply plugin: 'com.github.johnrengelman.shadow'
+    apply plugin: 'com.gradleup.shadow'
 
     java {
         toolchain {
@@ -33,13 +39,6 @@ allprojects {
     }
 }
 
-subprojects {
-    shadowJar {
-        archiveFileName = "${project.name}.jar"
-        destinationDirectory = rootProject.targetFolder
-    }
-}
-
 dependencies {
     compileOnly "org.spigotmc:v1_8_R3-Taco:latest"
     compileOnly "com.bgsoftware:SuperiorSkyblockAPI:2023.1"
@@ -47,41 +46,64 @@ dependencies {
 }
 
 processResources {
-    outputs.upToDateWhen { false }
-    eachFile { details ->
-        if (details.name.contentEquals('plugin.yml')) {
-            filter { String line ->
-                line.replace('${project.version}', rootProject.buildVersion)
-            }
+    def pluginVersion = rootProject.buildVersion
+    inputs.property('pluginVersion', pluginVersion)
+    filesMatching('plugin.yml') {
+        filter { String line ->
+            line.replace('${project.version}', pluginVersion.get())
         }
     }
 }
 
-shadowJar {
-    dependsOn(jar)
-
-    archiveFileName = rootProject.name + "-" + rootProject.buildVersion + ".jar"
-
-    delete fileTree(rootProject.targetFolder.getAbsolutePath())
-
-    destinationDirectory = rootProject.targetFolder
-    from sourceSets.getByName("main").output
-    configurations = [project.configurations.getByName("runtimeClasspath")]
+// The shaded jar takes the unclassified name, so move the plain jar out of its way.
+jar {
+    archiveClassifier.set('plain')
 }
 
-task zipArtifacts(type: Zip){
-    archiveFileName = rootProject.name + "-" + rootProject.buildVersion + ".zip"
-    destinationDirectory = rootProject.targetFolder
-    from files(rootProject.targetFolder) {
-        include '**/*.jar'
+shadowJar {
+    archiveClassifier.set('')
+}
+
+// The released files: the module jar, plus each subproject's jar under its own name
+// (Generator.jar goes into SuperiorSkyblock's world-generator folder).
+def rootName = rootProject.name
+def moduleJarName = rootProject.buildVersion.map { rootName + "-" + it + ".jar" }
+def releaseJars = copySpec {
+    from(tasks.named('shadowJar').flatMap { it.archiveFile }) {
+        rename { moduleJarName.get() }
+    }
+    subprojects.each { sub ->
+        def subName = sub.name
+        from(sub.tasks.named('shadowJar').flatMap { it.archiveFile }) {
+            rename { subName + ".jar" }
+        }
     }
 }
 
-build {
-    dependsOn shadowJar
-    dependsOn zipArtifacts
+tasks.register('zipArtifacts', Zip) {
+    group = 'build'
+    inputs.property('moduleJarName', moduleJarName)
+    archiveFileName = rootProject.buildVersion.map { rootName + "-" + it + ".zip" }
+    destinationDirectory = layout.buildDirectory.dir('distributions')
+    with releaseJars
 }
 
-publish.shouldRunAfter shadowJar
-shadowJar.shouldRunAfter build
-build.shouldRunAfter subprojects.build
+tasks.register('cleanTarget', Delete) {
+    delete rootProject.targetFolder
+}
+
+tasks.register('collectArtifacts', Sync) {
+    group = 'build'
+    inputs.property('moduleJarName', moduleJarName)
+    with releaseJars
+    from(tasks.named('zipArtifacts').flatMap { it.archiveFile })
+    into(rootProject.targetFolder)
+}
+
+tasks.named('build') {
+    dependsOn(tasks.named('shadowJar'))
+}
+
+tasks.named('shadowJar') {
+    finalizedBy('collectArtifacts')
+}
